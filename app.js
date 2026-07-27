@@ -2235,8 +2235,13 @@ async function renderChoroplethMap() {
   const subtitleInput = document.getElementById("map-subtitle-input");
   const legendTitleInput = document.getElementById("map-legend-title-input");
 
+  const isThemeMetric = metricVal.startsWith("theme:");
+  const unitLabel = isThemeMetric ? "Share of Plan Focus (%)" : "Proportion of Policy Measures (%)";
+
   const customTitle = titleInput ? titleInput.value : "Global Climate Adaptation Choropleth Map";
-  const customSubtitle = subtitleInput ? subtitleInput.value : `Mapped Metric: ${metricText}`;
+  const customSubtitle = (subtitleInput && subtitleInput.value.trim() !== "") 
+    ? subtitleInput.value.trim() 
+    : `Mapped Metric: ${metricText} (${unitLabel})`;
   const customLegendTitle = legendTitleInput ? legendTitleInput.value : "GRADIENT SCALE";
   const scaleType = document.getElementById("map-scale-type-select")?.value || "continuous";
   const paletteChoice = document.getElementById("map-color-scheme-select")?.value || "YlGnBu";
@@ -2344,7 +2349,8 @@ async function renderChoroplethMap() {
         .attr("stroke-width", "2.5px");
 
       if (tooltip) {
-        const labelText = data ? `<b>${esc(data.label)}</b><br>${esc(metricText)}: <b>${data.value}%</b>` : `<b>Country ID: ${d.id}</b><br>No report data uploaded`;
+        const unitText = isThemeMetric ? "% of report focus" : "% of policy measures";
+        const labelText = data ? `<b>${esc(data.label)}</b><br>${esc(metricText)}<br><b>${data.value}%</b> ${unitText}` : `<b>Country ID: ${d.id}</b><br>No report data uploaded`;
         tooltip.innerHTML = labelText;
         tooltip.style.display = "block";
       }
