@@ -45,12 +45,12 @@ function toast(message, type = "info", durationMs = 3000) {
 
 // ── Default Categories ───────────────────────────────────────
 const DEFAULT_CATEGORIES = [
-  { name: "Water Security & Flooding", desc: "Floods, sea level rise, droughts, water supply, reservoir storage, catchment management, drainage." },
-  { name: "Agriculture & Food Security", desc: "Crop resilience, soil conservation, livestock health, farm subsidies, food supply chain stability." },
-  { name: "Infrastructure & Built Environment", desc: "Seawalls, grid stability, public transport, road repair, cooling centers, resilient housing, urban heat islands." },
-  { name: "Nature-Based Solutions & Ecosystems", desc: "Reforestation, wetland restoration, biodiversity, green corridors, coastal dune management, peatland recovery." },
-  { name: "Public Health & Emergency Response", desc: "Heatwave warnings, vector-borne diseases, hospital resilience, disaster evacuation plans, clean air shelters." },
-  { name: "Governance, Policy & Finance", desc: "Adaptation funds, local council plans, climate risk disclosures, weather insurance schemes, national target alignment." }
+  { name: "Water Security & Flooding", desc: "Floods, sea level rise, droughts, water supply, reservoir storage, catchment management, drainage, 홍수, 가뭄, 해수면 상승, 저수지, 하천관리, 배수, alluvioni, inondazioni, siccità, bacini idrici, drenaggio, inundaciones, sequía, embalses, drenaje." },
+  { name: "Agriculture & Food Security", desc: "Crop resilience, soil conservation, livestock health, farm subsidies, food supply chain stability, 농업, 식량, 토양, 보조금, 공급망, 가축, agricoltura, sicurezza alimentare, suolo, sussidi agricoli, catena alimentari, agricultura, seguridad alimentaria, suelo, subsidios agrícolas, cadena de suministro." },
+  { name: "Infrastructure & Built Environment", desc: "Seawalls, grid stability, public transport, road repair, cooling centers, resilient housing, urban heat islands, 인프라, 대중교통, 전력망, 무더위 쉼터, 도시열섬, 방파제, 방조제, infrastrutture, trasporto pubblico, reti elettriche, centri raffreddamento, abitazioni, infraestructuras, transporte público, red eléctrica, viviendas." },
+  { name: "Nature-Based Solutions & Ecosystems", desc: "Reforestation, wetland restoration, biodiversity, green corridors, coastal dune management, peatland recovery, 생태계, 조림, 재림화, 습지, 생물다양성, 녹지축, 조경, 사구, ecosistemi, riforestazione, zone umide, biodiversità, corridoi ecologici, ecosistemas, reforestación, humedales, biodiversidad, corredores ecológicos." },
+  { name: "Public Health & Emergency Response", desc: "Heatwave warnings, vector-borne diseases, hospital resilience, disaster evacuation plans, clean air shelters, 보건, 재난, 대피, 감염병, 병원, 폭염 경보, 무더위, salute pubblica, emergenze, allerta calore, evacuazione, salute, salud pública, emergencias, ola de calor, evacuación, resiliencia hospitalaria." },
+  { name: "Governance, Policy & Finance", desc: "Adaptation funds, local council plans, climate risk disclosures, weather insurance schemes, national target alignment, 거버넌스, 지자체, 적응 기금, 예산, 제도, 법률, 연계, governance, politiche, finanza, fondi adattamento, enti locali, assicurazioni, gobernanza, políticas, financiación, fondos adaptación, municipios, seguros." }
 ];
 
 const THEME_COLORS = [
@@ -70,11 +70,11 @@ let taxonomySchema = "themes"; // "themes" or "policy_matrix"
 let thematicCategoriesBackup = []; // Backup user themes
 
 const MATRIX_CATEGORIES = [
-  { name: "Physical/technological", desc: "infrastructure, sea walls, flood defense, concrete, building standards, cooling systems, engineering." },
-  { name: "Ecosystem (nature-based)", desc: "nature, tree planting, reforestation, wetlands, green space, dunes, restore, biodiversity." },
-  { name: "Knowledge and behavioural", desc: "education, warning systems, awareness, information campaigns, training, guidelines, advice." },
-  { name: "Governance/institutional", desc: "local council, legislation, framework, national target, regulations, planning permissions, task force." },
-  { name: "Economic/financial", desc: "grant, funding, subsidy, tax incentive, climate insurance, budget, financial support, cost." }
+  { name: "Physical/technological", desc: "infrastructure, sea walls, flood defense, concrete, building standards, cooling systems, engineering, 물리적, 기술적, 인프라, 치수, 방재시설, 건축기준, 냉방, fisico, tecnologico, infrastrutture, difesa alluvioni, calcestruzzo, ingegneria, físico, tecnológico, infraestructuras, hormigón, ingeniería." },
+  { name: "Ecosystem (nature-based)", desc: "nature, tree planting, reforestation, wetlands, green space, dunes, restore, biodiversity, 생태계, 자연기반, 식목, 조림, 습지, 녹지, 생물다양성, 복원, ecosistemico, natura, riforestazione, zone umide, spazi verdi, biodiversità, ecosistémico, naturaleza, reforestación, humedales, espacios verdes, biodiversidad." },
+  { name: "Knowledge and behavioural", desc: "education, warning systems, awareness, information campaigns, training, guidelines, advice, 지식, 행동적, 교육, 조기경보, 인식제고, 훈련, 가이드라인, conoscenza, comportamentale, istruzione, allarme, formazione, linee guida, conocimiento, conductual, educación, sistemas alerta, formación, directrices." },
+  { name: "Governance/institutional", desc: "local council, legislation, framework, national target, regulations, planning permissions, task force, 거버넌스, 제도적, 지자체, 입법, 법안, 기본계획, 규제, 허가, governance, istituzionale, enti locali, legislazione, regolamenti, permessi, gobernanza, institucional, ayuntamientos, legislación, reglamentos." },
+  { name: "Economic/financial", desc: "grant, funding, subsidy, tax incentive, climate insurance, budget, financial support, cost, 경제적, 재정적, 보조금, 지원금, 재정, 예산, 금융지원, 비용, economico, finanziario, contributi, finanziamenti, sussidio, bilancio, costo, económico, financiero, subvención, financiación, subsidio, presupuesto, coste." }
 ];
 
 // ── Init ─────────────────────────────────────────────────────
@@ -725,7 +725,12 @@ For EACH theme provide:
   - description: what the fact is
   - quote: short supporting quote from the text
 
-Percentages don't need to sum to 100. Return valid JSON only.`;
+Percentages don't need to sum to 100. Return valid JSON only.
+
+MULTILINGUAL PROCESSING MANDATE:
+The report text may be written in Korean, Italian, Spanish, or another language.
+You MUST accurately comprehend technical policy terms in the native source language.
+However, ALL outputs (names, summaries, descriptions, quotes explanations, and fact classifications) MUST be returned in English so that multi-country comparisons remain aligned in English. If you include evidence quotes, provide the translated English quote (or foreign quote followed by English translation).`;
   }
 
   const customGuidance = localStorage.getItem("ara_ai_guidance") || "";
