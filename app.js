@@ -1,5 +1,5 @@
 /* ============================================================
-   National Adaptation Report Analyzer — Multi-Report Comparison
+   National Adaptation Report Analyser — Multi-Report Comparison
    ============================================================
    TABLE OF CONTENTS
    ─────────────────
@@ -47,7 +47,7 @@ function toast(message, type = "info", durationMs = 3000) {
 const DEFAULT_CATEGORIES = [
   { name: "Water Security & Flooding", desc: "Floods, sea level rise, droughts, water supply, reservoir storage, catchment management, drainage, 홍수, 가뭄, 해수면 상승, 저수지, 하천관리, 배수, alluvioni, inondazioni, siccità, bacini idrici, drenaggio, inundaciones, sequía, embalses, drenaje." },
   { name: "Agriculture & Food Security", desc: "Crop resilience, soil conservation, livestock health, farm subsidies, food supply chain stability, 농업, 식량, 토양, 보조금, 공급망, 가축, agricoltura, sicurezza alimentare, suolo, sussidi agricoli, catena alimentari, agricultura, seguridad alimentaria, suelo, subsidios agrícolas, cadena de suministro." },
-  { name: "Infrastructure & Built Environment", desc: "Seawalls, grid stability, public transport, road repair, cooling centers, resilient housing, urban heat islands, 인프라, 대중교통, 전력망, 무더위 쉼터, 도시열섬, 방파제, 방조제, infrastrutture, trasporto pubblico, reti elettriche, centri raffreddamento, abitazioni, infraestructuras, transporte público, red eléctrica, viviendas." },
+  { name: "Infrastructure & Built Environment", desc: "Seawalls, grid stability, public transport, road repair, cooling centres, resilient housing, urban heat islands, 인프라, 대중교통, 전력망, 무더위 쉼터, 도시열섬, 방파제, 방조제, infrastrutture, trasporto pubblico, reti elettriche, centri raffreddamento, abitazioni, infraestructuras, transporte público, red eléctrica, viviendas." },
   { name: "Nature-Based Solutions & Ecosystems", desc: "Reforestation, wetland restoration, biodiversity, green corridors, coastal dune management, peatland recovery, 생태계, 조림, 재림화, 습지, 생물다양성, 녹지축, 조경, 사구, ecosistemi, riforestazione, zone umide, biodiversità, corridoi ecologici, ecosistemas, reforestación, humedales, biodiversidad, corredores ecológicos." },
   { name: "Public Health & Emergency Response", desc: "Heatwave warnings, vector-borne diseases, hospital resilience, disaster evacuation plans, clean air shelters, 보건, 재난, 대피, 감염병, 병원, 폭염 경보, 무더위, salute pubblica, emergenze, allerta calore, evacuazione, salute, salud pública, emergencias, ola de calor, evacuación, resiliencia hospitalaria." },
   { name: "Governance, Policy & Finance", desc: "Adaptation funds, local council plans, climate risk disclosures, weather insurance schemes, national target alignment, 거버넌스, 지자체, 적응 기금, 예산, 제도, 법률, 연계, governance, politiche, finanza, fondi adattamento, enti locali, assicurazioni, gobernanza, políticas, financiación, fondos adaptación, municipios, seguros." }
@@ -70,7 +70,7 @@ let taxonomySchema = "themes"; // "themes" or "policy_matrix"
 let thematicCategoriesBackup = []; // Backup user themes
 
 const MATRIX_CATEGORIES = [
-  { name: "Physical/technological", desc: "infrastructure, sea walls, flood defense, concrete, building standards, cooling systems, engineering, 물리적, 기술적, 인프라, 치수, 방재시설, 건축기준, 냉방, fisico, tecnologico, infrastrutture, difesa alluvioni, calcestruzzo, ingegneria, físico, tecnológico, infraestructuras, hormigón, ingeniería." },
+  { name: "Physical/technological", desc: "infrastructure, sea walls, flood defence, concrete, building standards, cooling systems, engineering, 물리적, 기술적, 인프라, 치수, 방재시설, 건축기준, 냉방, fisico, tecnologico, infrastrutture, difesa alluvioni, calcestruzzo, ingegneria, físico, tecnológico, infraestructuras, hormigón, ingeniería." },
   { name: "Ecosystem (nature-based)", desc: "nature, tree planting, reforestation, wetlands, green space, dunes, restore, biodiversity, 생태계, 자연기반, 식목, 조림, 습지, 녹지, 생물다양성, 복원, ecosistemico, natura, riforestazione, zone umide, spazi verdi, biodiversità, ecosistémico, naturaleza, reforestación, humedales, espacios verdes, biodiversidad." },
   { name: "Knowledge and behavioural", desc: "education, warning systems, awareness, information campaigns, training, guidelines, advice, 지식, 행동적, 교육, 조기경보, 인식제고, 훈련, 가이드라인, conoscenza, comportamentale, istruzione, allarme, formazione, linee guida, conocimiento, conductual, educación, sistemas alerta, formación, directrices." },
   { name: "Governance/institutional", desc: "local council, legislation, framework, national target, regulations, planning permissions, task force, 거버넌스, 제도적, 지자체, 입법, 법안, 기본계획, 규제, 허가, governance, istituzionale, enti locali, legislazione, regolamenti, permessi, gobernanza, institucional, ayuntamientos, legislación, reglamentos." },
@@ -213,7 +213,7 @@ function initAPIKey() {
 function updateAPIKeyStatus() {
   const k = localStorage.getItem("ara_key");
   const b = document.getElementById("api-status-badge");
-  const a = document.getElementById("analyze-all-btn");
+  const a = document.getElementById("analyse-all-btn");
   
   const guidanceCard = document.getElementById("ai-guidance-card");
   if (guidanceCard) guidanceCard.style.display = (analysisMode === "ai") ? "block" : "none";
@@ -325,7 +325,7 @@ function setupEventListeners() {
 
   // File list actions
   document.getElementById("clear-all-btn")?.addEventListener("click", () => { reports = []; renderFileList(); resetViews(); allFacts = []; });
-  document.getElementById("analyze-all-btn")?.addEventListener("click", () => runAllAnalyses());
+  document.getElementById("analyse-all-btn")?.addEventListener("click", () => runAllAnalyses());
 
   // Tab bar
   document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
@@ -438,13 +438,13 @@ function guessCountry(name) {
 function renderFileList() {
   const container = document.getElementById("file-list-container");
   const list = document.getElementById("file-list");
-  const analyzeBtn = document.getElementById("analyze-all-btn");
+  const analyseBtn = document.getElementById("analyse-all-btn");
   if (!container || !list) return;
 
   if (reports.length === 0) {
     container.hidden = true;
     document.getElementById("dropzone").style.display = "block";
-    if (analyzeBtn) analyzeBtn.disabled = true;
+    if (analyseBtn) analyseBtn.disabled = true;
     return;
   }
 
@@ -590,7 +590,7 @@ async function runAllAnalyses() {
       if (r.extractedText.length < 100) throw new Error(`No substantial text from ${r.file.name}. It may be scanned/image-only.`);
 
       if (analysisMode === "ai") {
-        progress(Math.floor(((i + 0.5) / total) * 80), `Analyzing ${r.countryLabel}`, "Sending to Gemini for classification...");
+        progress(Math.floor(((i + 0.5) / total) * 80), `Analysing ${r.countryLabel}`, "Sending to Gemini for classification...");
         r.results = await callGeminiAnalysis(r.extractedText, apiKey);
         if (i < total - 1) {
           const delayStr = localStorage.getItem("ara_api_delay") || "12000";
@@ -599,7 +599,7 @@ async function runAllAnalyses() {
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       } else {
-        progress(Math.floor(((i + 0.5) / total) * 80), `Analyzing ${r.countryLabel}`, "Scanning local keywords...");
+        progress(Math.floor(((i + 0.5) / total) * 80), `Analysing ${r.countryLabel}`, "Scanning local keywords...");
         r.results = runLocalKeywordAnalysis(r.extractedText);
       }
     }
@@ -1276,7 +1276,7 @@ function runLocalKeywordAnalysis(text) {
         continue;
       }
 
-      if (/department|agency|council|association|committee|ministry|union|commission|group|institute|organization|organisation|government/.test(lowerSent) && /[A-Z]{3,}/.test(sentence)) {
+      if (/department|agency|council|association|committee|ministry|union|commission|group|institute|organisation|organisation|government/.test(lowerSent) && /[A-Z]{3,}/.test(sentence)) {
         facts.push({
           type: "Organisation",
           description: sentence.substring(0, 120) + (sentence.length > 120 ? "..." : ""),
@@ -2095,9 +2095,9 @@ function exportSingleJSON() {
 
 function exportComparisonCSV() {
   const themeNames = categories.map(c => c.name);
-  let csv = "Theme," + reports.map(r => `"${r.countryLabel}"`).join(",") + "\n";
-  themeNames.forEach(theme => {
-    csv += `"${theme}",` + reports.map(r => {
+  let csv = "Country," + themeNames.map(t => `"${t.replace(/"/g, '""')}"`).join(",") + "\n";
+  reports.forEach(r => {
+    csv += `"${r.countryLabel.replace(/"/g, '""')}",` + themeNames.map(theme => {
       const t = (r.results?.topics || []).find(x => x.name === theme);
       return t ? t.percentage : 0;
     }).join(",") + "\n";

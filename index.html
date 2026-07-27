@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>National Adaptation Report Analyzer</title>
+  <title>National Adaptation Report Analyser</title>
   <meta name="description" content="Extract and classify key adaptation themes from national adaptation plans and climate reports using Gemini.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=32">
+  <link rel="stylesheet" href="style.css?v=34">
 </head>
 <body>
   <div id="toast-container"></div>
@@ -18,14 +18,14 @@
     <div class="header-inner">
       <div class="header-logo">
         <span class="logo-kicker">Climate Resilience Directory</span>
-        <h1 class="logo-title">Climate Report Analyzer</h1>
+        <h1 class="logo-title">Climate Report Analyser</h1>
       </div>
     </div>
   </header>
 
   <!-- ── Main Grid Container ────────────────────────────────── -->
-  <main class="analyzer-container">
-    <div class="analyzer-grid">
+  <main class="analyser-container">
+    <div class="analyser-grid">
       
       <!-- ── Left Column: Controls & Inputs ────────────────────── -->
       <section class="controls-column">
@@ -115,8 +115,8 @@
             <div id="file-list" class="file-list"></div>
             <div class="file-list-actions">
               <button id="clear-all-btn" class="btn btn-outline btn-sm">Clear All</button>
-              <button id="analyze-all-btn" class="btn btn-primary btn-sm" disabled>
-                <i data-lucide="play"></i> Analyze All
+              <button id="analyse-all-btn" class="btn btn-primary btn-sm" disabled>
+                <i data-lucide="play"></i> Analyse All
               </button>
             </div>
           </div>
@@ -185,13 +185,13 @@
         <div id="status-empty" class="card empty-state">
           <div class="empty-state-content">
             <i data-lucide="bar-chart-3" class="large-icon"></i>
-            <h2>Adaptation Report Analyzer</h2>
+            <h2>Adaptation Report Analyser</h2>
             <p>Upload National Adaptation Plans, climate risk assessments, or policy papers. We'll parse files locally and use Gemini to estimate the percentage breakdown of different themes, summarize key focus areas, compare country strategies against the UK, and build an exportable research database.</p>
             <div class="steps-guide">
               <div class="step-guide-item"><span class="step-num">1</span> Enter your free Gemini API Key</div>
               <div class="step-guide-item"><span class="step-num">2</span> Upload one or more reports</div>
               <div class="step-guide-item"><span class="step-num">3</span> Configure your target analysis themes</div>
-              <div class="step-guide-item"><span class="step-num">4</span> Click "Analyze All" to begin</div>
+              <div class="step-guide-item"><span class="step-num">4</span> Click "Analyse All" to begin</div>
             </div>
           </div>
         </div>
@@ -321,14 +321,14 @@
           <!-- Grouped Bar Chart -->
           <div class="card chart-card">
             <h3 class="card-section-title"><i data-lucide="bar-chart-2"></i> Theme Distribution by Country</h3>
-            <p class="section-subtitle">Side-by-side comparison of focus areas across analyzed nations.</p>
+            <p class="section-subtitle">Side-by-side comparison of focus areas across analysed nations.</p>
             <div id="grouped-bar-container" class="grouped-bar-chart" style="margin-top: 1.5rem;"></div>
           </div>
 
           <!-- Comparison Matrix Table -->
           <div class="card comparison-matrix-card">
             <h3 class="card-section-title"><i data-lucide="table"></i> Comparison Matrix</h3>
-            <p class="section-subtitle">Matrix color-coded showing percentage difference compared to the UK baseline.</p>
+            <p class="section-subtitle">Matrix colour-coded showing percentage difference compared to the UK baseline.</p>
             <div id="comparison-matrix-container" style="margin-top: 1.25rem; overflow-x: auto;"></div>
           </div>
 
@@ -464,6 +464,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <script src="app.js?v=32"></script>
+  <script src="app.js?v=34"></script>
 </body>
 </html>

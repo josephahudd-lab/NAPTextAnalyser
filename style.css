@@ -127,7 +127,7 @@ body {
 }
 
 /* ── Container Layout ────────────────────────────────────── */
-.analyzer-container {
+.analyser-container {
   max-width: var(--max);
   width: 100%;
   margin: 0 auto;
@@ -135,7 +135,7 @@ body {
   flex: 1;
 }
 
-.analyzer-grid {
+.analyser-grid {
   display: grid;
   grid-template-columns: 360px 1fr;
   gap: 2rem;
@@ -143,7 +143,7 @@ body {
 }
 
 @media (max-width: 900px) {
-  .analyzer-grid {
+  .analyser-grid {
     grid-template-columns: 1fr;
   }
 }
