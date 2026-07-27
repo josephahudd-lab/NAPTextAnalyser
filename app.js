@@ -341,6 +341,9 @@ function setupEventListeners() {
   document.getElementById("export-comparison-btn")?.addEventListener("click", exportComparisonCSV);
   document.getElementById("export-facts-csv-btn")?.addEventListener("click", exportFactsCSV);
   document.getElementById("export-facts-json-btn")?.addEventListener("click", exportFactsJSON);
+  document.getElementById("map-metric-select")?.addEventListener("change", renderChoroplethMap);
+  document.getElementById("export-map-svg-btn")?.addEventListener("click", exportMapSVG);
+  document.getElementById("export-map-png-btn")?.addEventListener("click", exportMapPNG);
 
   // Text search
   document.getElementById("text-search-input")?.addEventListener("input", e => renderExtractedText(e.target.value));
@@ -1435,11 +1438,13 @@ function switchTab(tab) {
   document.getElementById("tab-single").style.display = tab === "single" ? "flex" : "none";
   document.getElementById("tab-comparison").style.display = tab === "comparison" ? "flex" : "none";
   document.getElementById("tab-facts").style.display = tab === "facts" ? "flex" : "none";
+  document.getElementById("tab-map").style.display = tab === "map" ? "flex" : "none";
   document.getElementById("status-empty").style.display = "none";
 
   if (tab === "single") displaySingleReport();
   else if (tab === "comparison") displayComparison();
   else if (tab === "facts") { populateFactsFilters(); renderFactsTable(); }
+  else if (tab === "map") { populateMapMetricSelect(); renderChoroplethMap(); }
   icons();
 }
 
@@ -2084,6 +2089,331 @@ function bindFactDeletion() {
       }
     });
   });
+}
+
+
+// ── Choropleth Map Module ───────────────────────────────────
+const COUNTRY_ISO_MAP = {
+  "uk": 826, "united kingdom": 826, "great britain": 826, "england": 826,
+  "france": 250, "french": 250,
+  "germany": 276, "deutschland": 276,
+  "spain": 724, "españa": 724,
+  "italy": 380, "italia": 380,
+  "south korea": 410, "korea": 410, "republic of korea": 410,
+  "united states": 840, "usa": 840, "us": 840, "america": 840,
+  "canada": 124,
+  "australia": 36,
+  "japan": 392,
+  "china": 156,
+  "india": 356,
+  "brazil": 76,
+  "mexico": 484,
+  "south africa": 710,
+  "netherlands": 528,
+  "sweden": 752,
+  "norway": 578,
+  "finland": 246,
+  "denmark": 208,
+  "ireland": 372,
+  "switzerland": 756,
+  "austria": 40,
+  "portugal": 620,
+  "greece": 300,
+  "belgium": 56,
+  "new zealand": 554
+};
+
+let cachedWorldAtlas = null;
+
+function populateMapMetricSelect() {
+  const select = document.getElementById("map-metric-select");
+  if (!select) return;
+  const currentVal = select.value;
+  let html = `<optgroup label="Thematic Sectors / Focus Areas">`;
+  categories.forEach(cat => {
+    html += `<option value="theme:${esc(cat.name)}">${esc(cat.name)} (%)</option>`;
+  });
+  html += `</optgroup>`;
+
+  if (taxonomySchema === "policy_matrix") {
+    html += `<optgroup label="Policy Attributes (% of Extracted Measures)">`;
+    Object.keys(MATRIX_OPTIONS).forEach(dim => {
+      const dimLabel = DIMENSION_LABELS[dim] || dim;
+      MATRIX_OPTIONS[dim].forEach(opt => {
+        html += `<option value="dim:${dim}:${opt}">${esc(dimLabel)}: ${esc(opt)} (%)</option>`;
+      });
+    });
+    html += `</optgroup>`;
+  }
+
+  select.innerHTML = html;
+  if (currentVal && select.querySelector(`option[value="${currentVal}"]`)) {
+    select.value = currentVal;
+  }
+}
+
+function getIsoCodeForCountryLabel(label) {
+  if (!label) return null;
+  const clean = label.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim();
+  if (COUNTRY_ISO_MAP[clean]) return COUNTRY_ISO_MAP[clean];
+  for (const k in COUNTRY_ISO_MAP) {
+    if (clean.includes(k)) return COUNTRY_ISO_MAP[k];
+  }
+  return null;
+}
+
+async function renderChoroplethMap() {
+  const container = document.getElementById("map-container");
+  const svgEl = document.getElementById("choropleth-svg");
+  const select = document.getElementById("map-metric-select");
+  const tooltip = document.getElementById("map-tooltip");
+  if (!container || !svgEl || !select || !window.d3 || !window.topojson) return;
+
+  const metricVal = select.value || (categories[0] ? `theme:${categories[0].name}` : "");
+  if (!metricVal) return;
+
+  const metricText = select.options[select.selectedIndex]?.text || "Adaptation Metric";
+
+  // Calculate country scores for metric
+  const countryData = {}; // iso -> { label, value }
+  reports.forEach(r => {
+    const iso = getIsoCodeForCountryLabel(r.countryLabel);
+    if (!iso) return;
+
+    let val = 0;
+    if (metricVal.startsWith("theme:")) {
+      const themeName = metricVal.substring(6);
+      const t = (r.results?.topics || []).find(x => x.name === themeName);
+      val = t ? t.percentage : 0;
+    } else if (metricVal.startsWith("dim:")) {
+      const parts = metricVal.split(":");
+      const dim = parts[1];
+      const opt = parts[2];
+      const facts = allFacts.filter(f => f.country === r.countryLabel);
+      const matching = facts.filter(f => f[dim] === opt);
+      val = facts.length > 0 ? Math.round((matching.length / facts.length) * 100) : 0;
+    }
+
+    countryData[iso] = { label: r.countryLabel, value: val };
+  });
+
+  // Calculate max value for color scale
+  const values = Object.values(countryData).map(d => d.value);
+  const maxVal = values.length > 0 ? Math.max(...values, 10) : 100;
+
+  // Color scale
+  const colorScale = d3.scaleSequential()
+    .domain([0, maxVal])
+    .interpolator(d3.interpolateYlGnBu);
+
+  // Update HTML Legend Labels
+  const minLabel = document.getElementById("legend-min-label");
+  const maxLabel = document.getElementById("legend-max-label");
+  if (minLabel) minLabel.textContent = "0%";
+  if (maxLabel) maxLabel.textContent = `${maxVal}%`;
+
+  // Fetch 50m high-resolution world atlas topology if not cached
+  if (!cachedWorldAtlas) {
+    try {
+      const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json");
+      cachedWorldAtlas = await res.json();
+    } catch (err) {
+      console.warn("High-res 50m topology load failed, falling back to 110m:", err);
+      try {
+        const res2 = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
+        cachedWorldAtlas = await res2.json();
+      } catch (err2) {
+        console.error("Failed to load map topology:", err2);
+        return;
+      }
+    }
+  }
+
+  const svg = d3.select(svgEl);
+  svg.selectAll("*").remove(); // Clear previous rendering
+
+  const width = 960;
+  const height = 520;
+  const projection = d3.geoNaturalEarth1()
+    .scale(165)
+    .translate([width / 2, height / 2 + 15]);
+
+  const pathGenerator = d3.geoPath().projection(projection);
+  const countries = topojson.feature(cachedWorldAtlas, cachedWorldAtlas.objects.countries).features;
+
+  // 1. Background Ocean
+  svg.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("fill", "#f8f9fa");
+
+  // 2. High-Resolution Country Paths
+  const mapGroup = svg.append("g");
+
+  mapGroup.selectAll("path")
+    .data(countries)
+    .enter()
+    .append("path")
+    .attr("d", pathGenerator)
+    .attr("fill", d => {
+      const data = countryData[+d.id];
+      return data ? colorScale(data.value) : "#e5e7eb";
+    })
+    .attr("stroke", "#ffffff")
+    .attr("stroke-width", d => countryData[+d.id] ? "1.2px" : "0.5px")
+    .style("cursor", d => countryData[+d.id] ? "pointer" : "default")
+    .on("mouseover", function (event, d) {
+      const data = countryData[+d.id];
+      d3.select(this)
+        .attr("stroke", "#1d4e89")
+        .attr("stroke-width", "2.5px");
+
+      if (tooltip) {
+        const labelText = data ? `<b>${esc(data.label)}</b><br>${esc(metricText)}: <b>${data.value}%</b>` : `<b>Country ID: ${d.id}</b><br>No report data uploaded`;
+        tooltip.innerHTML = labelText;
+        tooltip.style.display = "block";
+      }
+    })
+    .on("mousemove", function (event) {
+      if (tooltip) {
+        const bounds = container.getBoundingClientRect();
+        tooltip.style.left = (event.clientX - bounds.left + 12) + "px";
+        tooltip.style.top = (event.clientY - bounds.top + 12) + "px";
+      }
+    })
+    .on("mouseleave", function (event, d) {
+      d3.select(this)
+        .attr("stroke", "#ffffff")
+        .attr("stroke-width", countryData[+d.id] ? "1.2px" : "0.5px");
+      if (tooltip) tooltip.style.display = "none";
+    });
+
+  // 3. In-SVG Title & Active Metric Header (for SVG & PNG Export)
+  const headerGroup = svg.append("g")
+    .attr("transform", "translate(25, 35)");
+
+  headerGroup.append("text")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("font-family", "'DM Serif Display', Georgia, serif")
+    .attr("font-size", "20px")
+    .attr("font-weight", "bold")
+    .attr("fill", "#1a1a18")
+    .text("Global Climate Adaptation Choropleth Map");
+
+  headerGroup.append("text")
+    .attr("x", 0)
+    .attr("y", 22)
+    .attr("font-family", "'Inter', system-ui, sans-serif")
+    .attr("font-size", "13px")
+    .attr("font-weight", "600")
+    .attr("fill", "#1d4e89")
+    .text(`Mapped Metric: ${metricText}`);
+
+  // 4. In-SVG Gradient Scale Legend (for SVG & PNG Export)
+  const defs = svg.append("defs");
+  const linearGrad = defs.append("linearGradient")
+    .attr("id", "svg-choropleth-gradient")
+    .attr("x1", "0%").attr("y1", "0%")
+    .attr("x2", "100%").attr("y2", "0%");
+
+  linearGrad.append("stop").attr("offset", "0%").attr("stop-color", "#e0f2fe");
+  linearGrad.append("stop").attr("offset", "50%").attr("stop-color", "#0284c7");
+  linearGrad.append("stop").attr("offset", "100%").attr("stop-color", "#1d4e89");
+
+  const legendGroup = svg.append("g")
+    .attr("transform", "translate(25, 435)");
+
+  // Legend Card Background
+  legendGroup.append("rect")
+    .attr("x", -10)
+    .attr("y", -10)
+    .attr("width", 260)
+    .attr("height", 65)
+    .attr("fill", "rgba(255, 255, 255, 0.9)")
+    .attr("stroke", "#e4e3de")
+    .attr("stroke-width", "1px")
+    .attr("rx", 6);
+
+  legendGroup.append("text")
+    .attr("x", 0)
+    .attr("y", 6)
+    .attr("font-family", "'Inter', system-ui, sans-serif")
+    .attr("font-size", "11px")
+    .attr("font-weight", "600")
+    .attr("fill", "#6b6b63")
+    .text("GRADIENT SCALE (0% - " + maxVal + "%)");
+
+  legendGroup.append("rect")
+    .attr("x", 0)
+    .attr("y", 15)
+    .attr("width", 240)
+    .attr("height", 12)
+    .attr("rx", 3)
+    .attr("fill", "url(#svg-choropleth-gradient)")
+    .attr("stroke", "#c8c7c0")
+    .attr("stroke-width", "0.5px");
+
+  legendGroup.append("text")
+    .attr("x", 0)
+    .attr("y", 42)
+    .attr("font-family", "'Inter', system-ui, sans-serif")
+    .attr("font-size", "11px")
+    .attr("font-weight", "600")
+    .attr("fill", "#1a1a18")
+    .text("0%");
+
+  legendGroup.append("text")
+    .attr("x", 240)
+    .attr("y", 42)
+    .attr("text-anchor", "end")
+    .attr("font-family", "'Inter', system-ui, sans-serif")
+    .attr("font-size", "11px")
+    .attr("font-weight", "600")
+    .attr("fill", "#1a1a18")
+    .text(maxVal + "%");
+}
+
+function exportMapSVG() {
+  const svgEl = document.getElementById("choropleth-svg");
+  if (!svgEl) return;
+  const serializer = new XMLSerializer();
+  const source = '<?xml version="1.0" encoding="UTF-8"?>\n' + serializer.serializeToString(svgEl);
+  download(source, "global_adaptation_choropleth_map.svg", "image/svg+xml;charset=utf-8");
+  toast("Exported Map SVG", "success");
+}
+
+function exportMapPNG() {
+  const svgEl = document.getElementById("choropleth-svg");
+  if (!svgEl) return;
+  const serializer = new XMLSerializer();
+  const source = serializer.serializeToString(svgEl);
+  const svgBlob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1920;  // 2x high-res output
+    canvas.height = 1000;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+
+    canvas.toBlob(blob => {
+      const pngUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = pngUrl;
+      a.download = "global_adaptation_choropleth_map.png";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { a.remove(); URL.revokeObjectURL(pngUrl); }, 100);
+      toast("Exported High-Res PNG Map", "success");
+    }, "image/png");
+  };
+  img.src = url;
 }
 
 // ── Export Functions ──────────────────────────────────────────

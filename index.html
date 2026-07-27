@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=34">
+  <link rel="stylesheet" href="style.css?v=36">
 </head>
 <body>
   <div id="toast-container"></div>
@@ -179,6 +179,7 @@
           <button class="tab-btn active" data-tab="single">Single Report</button>
           <button class="tab-btn" data-tab="comparison">Comparison</button>
           <button class="tab-btn" data-tab="facts">Facts Database</button>
+          <button class="tab-btn" data-tab="map"><i data-lucide="map"></i> Choropleth Map</button>
         </nav>
 
         <!-- Onboarding / Waiting State -->
@@ -455,15 +456,60 @@
           <div id="facts-table-container"></div>
         </div>
 
+        <!-- Tab Content: Choropleth Map View -->
+        <div id="tab-map" class="tab-content" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;">
+          
+          <!-- Map Header Card -->
+          <div class="card map-header-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <span class="results-kicker">Spatial Visualisation</span>
+                <h2 style="font-family: var(--font-d); font-size: 1.45rem; margin-top: 0.2rem;">Global Adaptation Choropleth Map</h2>
+                <p class="section-subtitle">Visualise and compare national focus areas and policy attributes across geographic boundaries.</p>
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button id="export-map-svg-btn" class="btn btn-outline btn-sm"><i data-lucide="download"></i> Export Vector SVG</button>
+                <button id="export-map-png-btn" class="btn btn-primary btn-sm"><i data-lucide="image"></i> Export High-Res PNG</button>
+              </div>
+            </div>
+            
+            <!-- Controls row -->
+            <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--rule); flex-wrap: wrap;">
+              <label for="map-metric-select" style="font-size: 0.8rem; font-weight: 600; color: var(--ink-2); white-space: nowrap;">Select Metric to Map:</label>
+              <select id="map-metric-select" style="padding: 0.45rem 0.75rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.82rem; background: var(--bg-alt); outline: none; cursor: pointer; flex: 1; max-width: 420px;">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Map Canvas Card -->
+          <div class="card map-canvas-card" style="padding: 1.25rem; position: relative;">
+            <div id="map-container" style="width: 100%; height: 520px; position: relative; overflow: hidden; background: #f8f9fa; border-radius: 6px; border: 1px solid var(--rule);">
+              <svg id="choropleth-svg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%; display: block;"></svg>
+              <div id="map-tooltip" style="position: absolute; display: none; pointer-events: none; background: rgba(26,26,24,0.92); color: #fff; padding: 0.6rem 0.85rem; border-radius: 6px; font-size: 0.78rem; font-family: var(--font-b); box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 100; border: 1px solid rgba(255,255,255,0.15);"></div>
+            </div>
+
+            <!-- Map Legend Bar -->
+            <div id="map-legend-container" style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--rule);">
+              <span style="font-size: 0.75rem; font-weight: 600; color: var(--ink-3);" id="legend-min-label">0%</span>
+              <div style="flex: 1; max-width: 320px; height: 12px; margin: 0 1.25rem; border-radius: 6px; background: linear-gradient(to right, #e0f2fe, #0284c7, #1d4e89); border: 1px solid var(--rule-dk);" id="legend-gradient-bar"></div>
+              <span style="font-size: 0.75rem; font-weight: 600; color: var(--ink-3);" id="legend-max-label">100%</span>
+            </div>
+          </div>
+
+        </div>
+
       </section>
 
     </div>
   </main>
 
-  <!-- CDNs for extraction libraries -->
+  <!-- CDNs for extraction libraries & map rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <script src="app.js?v=34"></script>
+  <script src="app.js?v=36"></script>
 </body>
 </html>
