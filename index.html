@@ -8,170 +8,163 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=42">
 </head>
 <body>
   <div id="toast-container"></div>
 
-  <!-- ── App Header ─────────────────────────────────────────── -->
+  <!-- Sticky Header -->
   <header class="app-header">
     <div class="header-inner">
       <div class="header-logo">
         <span class="logo-kicker">Climate Resilience Directory</span>
         <h1 class="logo-title">Climate Report Analyser</h1>
       </div>
+      <div class="header-actions">
+        <span class="version-tag">v3.5 Multi-Report</span>
+      </div>
     </div>
   </header>
 
-  <!-- ── Main Grid Container ────────────────────────────────── -->
+  <!-- Main Grid Layout -->
   <main class="analyser-container">
     <div class="analyser-grid">
       
-      <!-- ── Left Column: Controls & Inputs ────────────────────── -->
-      <section class="controls-column">
+      <!-- LEFT COLUMN: Controls -->
+      <aside class="controls-column">
         
-        <!-- Analysis Mode Selector -->
-        <div class="card mode-selector-card">
-          <div class="card-header-compact">
-            <h3><i data-lucide="sliders"></i> Analysis Mode</h3>
-          </div>
-          <p class="field-desc">Choose between AI semantic parsing or local keyword-based scans.</p>
-          <div class="mode-toggle-group" style="display: flex; gap: 0.5rem; background: var(--bg-alt); padding: 0.25rem; border-radius: 6px; border: 1px solid var(--rule);">
+        <!-- Analysis Mode Selector Card -->
+        <div class="card analysis-mode-card" style="padding: 1rem 1.25rem;">
+          <label style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.5rem;">Analysis Engine Mode</label>
+          <div style="display: flex; gap: 0.5rem; background: var(--bg-alt); padding: 0.25rem; border-radius: 6px; border: 1px solid var(--rule-dk);">
             <button id="mode-btn-ai" class="btn btn-primary btn-sm active" style="flex: 1; border-radius: 4px; padding: 0.4rem; font-size: 0.75rem;" type="button">
-              <i data-lucide="sparkles"></i> AI Analysis
+              <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> AI Analysis
             </button>
             <button id="mode-btn-keyword" class="btn btn-outline btn-sm" style="flex: 1; border-radius: 4px; padding: 0.4rem; font-size: 0.75rem; background: transparent; border: none; color: var(--ink-3);" type="button">
-              <i data-lucide="search"></i> Keyword Scan
+              <i data-lucide="search" style="width: 14px; height: 14px;"></i> Keyword Scan
             </button>
           </div>
+          <p class="field-desc" style="margin-top: 0.5rem; font-size: 0.72rem;">Choose between AI semantic parsing or local keyword-based scans.</p>
         </div>
 
-        <!-- Taxonomy Schema Selector -->
-        <div class="card schema-selector-card">
-          <div class="card-header-compact">
-            <h3><i data-lucide="layers"></i> Classification Schema</h3>
+        <!-- Taxononomy Schema Selector Card -->
+        <div class="card taxonomy-schema-card" style="padding: 1rem 1.25rem;">
+          <label style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.5rem;">Classification Schema</label>
+          <div style="display: flex; gap: 0.5rem; background: var(--bg-alt); padding: 0.25rem; border-radius: 6px; border: 1px solid var(--rule-dk);">
+            <button id="schema-btn-themes" class="btn btn-primary btn-sm active" style="flex: 1; border-radius: 4px; padding: 0.4rem; font-size: 0.75rem;" type="button">
+              <i data-lucide="layers" style="width: 14px; height: 14px;"></i> Thematic Focus
+            </button>
+            <button id="schema-btn-matrix" class="btn btn-outline btn-sm" style="flex: 1; border-radius: 4px; padding: 0.4rem; font-size: 0.75rem; background: transparent; border: none; color: var(--ink-3);" type="button">
+              <i data-lucide="grid" style="width: 14px; height: 14px;"></i> Policy Matrix (10D)
+            </button>
           </div>
-          <p class="field-desc">Select how reports should be classified.</p>
-          <div class="schema-toggle-group" style="display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.25rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 500; cursor: pointer;">
-              <input type="radio" name="taxonomy-schema" id="schema-themes" value="themes" checked style="cursor: pointer;">
-              <span>Thematic Focus (Water, Agriculture, etc.)</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 500; cursor: pointer;">
-              <input type="radio" name="taxonomy-schema" id="schema-matrix" value="policy_matrix" style="cursor: pointer;">
-              <span>Policy Measure Matrix (10 Dimensions)</span>
-            </label>
-          </div>
+          <p class="field-desc" style="margin-top: 0.5rem; font-size: 0.72rem;">Toggle between standard climate themes or the 10-dimension Adaptation Policy Matrix.</p>
         </div>
 
-        <!-- API Key Configuration -->
-        <div class="card api-key-card" id="api-key-card">
+        <!-- API Configuration Card -->
+        <div class="card api-key-card">
           <div class="card-header-compact">
             <h3><i data-lucide="key-round"></i> Gemini API Configuration</h3>
             <span id="api-status-badge" class="badge badge-warning">Missing Key</span>
           </div>
-          <p class="field-desc">Required to run analysis. Get a free key at <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>.</p>
-          
-          <div class="api-model-group" style="margin-bottom: 0.75rem;">
-            <label for="api-model-select" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Select Model</label>
-            <select id="api-model-select" style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt); outline: none;">
-              <option value="gemini-3.5-flash" selected>Gemini 3.5 Flash (Recommended)</option>
-              <option value="gemini-3.5-pro">Gemini 3.5 Pro</option>
-              <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
-              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-            </select>
-          </div>
-          
-          <div class="api-delay-group" style="margin-bottom: 0.75rem;">
-            <label for="api-delay-select" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Request Interval (Rate Limiting)</label>
-            <select id="api-delay-select" style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt); outline: none;">
-              <option value="2000">2s delay (Standard / Paid tier)</option>
-              <option value="12000" selected>12s delay (Strict 5 RPM Free Tier limit)</option>
-              <option value="30000">30s delay (Extra safe)</option>
-            </select>
-          </div>
-          
-          <div class="api-input-group">
-            <input type="password" id="api-key-input" placeholder="AIzaSy..." autocomplete="off">
-            <button id="save-key-btn" class="btn btn-primary btn-sm">Save settings</button>
+          <p class="field-desc" style="margin-bottom: 0.75rem;">
+            Requires a free API key from <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>. Keys are stored locally in your browser only.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div>
+              <label for="api-model-select" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Select Model</label>
+              <select id="api-model-select" class="api-model-select" style="width: 100%; padding: 0.45rem 0.6rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt); outline: none;">
+                <option value="gemini-3.5-flash" selected>Gemini 3.5 Flash (Recommended)</option>
+                <option value="gemini-3.5-pro">Gemini 3.5 Pro</option>
+                <option value="gemini-3.1-flash">Gemini 3.1 Flash</option>
+                <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+              </select>
+            </div>
+            <div>
+              <label for="api-delay-select" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Request Interval (Rate Limiting)</label>
+              <select id="api-delay-select" class="api-model-select" style="width: 100%; padding: 0.45rem 0.6rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt); outline: none;">
+                <option value="2000">2 Seconds (Standard)</option>
+                <option value="12000" selected>12 Seconds (Strict RPM Free Tier Limit)</option>
+                <option value="30000">30 Seconds (Safe Delay)</option>
+              </select>
+            </div>
+            <div class="api-input-group">
+              <input type="password" id="api-key-input" placeholder="Enter Gemini API key..." autocomplete="off">
+              <button id="save-key-btn" class="btn btn-primary">Save</button>
+            </div>
           </div>
         </div>
 
-        <!-- File Ingestion Dropzone -->
+        <!-- AI Guidance / Prompt Injection Card -->
+        <div class="card ai-guidance-card" id="ai-guidance-card">
+          <div class="card-header-compact">
+            <h3><i data-lucide="message-square-plus"></i> AI Analysis Guidance (Optional)</h3>
+          </div>
+          <p class="field-desc" style="margin-bottom: 0.5rem;">
+            Add custom instructions or coding guidelines for Gemini to follow during classification.
+          </p>
+          <textarea id="ai-guidance-input" placeholder="e.g. Treat local council grants as Governance. Prioritise Nature-Based Solutions when trees are mentioned..." style="width: 100%; height: 75px; padding: 0.5rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; font-family: var(--font-b); background: var(--bg-alt); resize: vertical; outline: none;"></textarea>
+        </div>
+
+        <!-- File Upload Card -->
         <div class="card dropzone-card">
           <div id="dropzone" class="dropzone">
-            <input type="file" id="file-input" accept=".pdf,.docx" multiple style="display: none;">
-            <div class="dropzone-prompt">
-              <i data-lucide="upload-cloud" class="dropzone-icon"></i>
-              <h4>Drag & drop reports here</h4>
-              <p>Supports PDF or Word (.docx) files. Add multiple for comparison.</p>
-              <button id="browse-btn" class="btn btn-outline btn-sm">Browse Files</button>
-            </div>
+            <input type="file" id="file-input" accept=".pdf,.docx" multiple hidden>
+            <i data-lucide="upload-cloud" class="dropzone-icon"></i>
+            <h4 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem; font-weight: 600;">Drag & drop reports here</h4>
+            <p style="font-size: 0.78rem; color: var(--ink-3); margin-bottom: 0.75rem;">Supports PDF or Word (.docx) files. Add multiple for comparison.</p>
+            <button id="browse-btn" class="btn btn-outline btn-sm" type="button">Browse Files</button>
           </div>
-          
-          <!-- Multiple Files List -->
-          <div id="file-list-container" class="active-file-container" hidden>
+
+          <!-- Uploaded Files List -->
+          <div id="file-list-container" style="display: none; margin-top: 1rem;">
             <div id="file-list" class="file-list"></div>
             <div class="file-list-actions">
               <button id="clear-all-btn" class="btn btn-outline btn-sm">Clear All</button>
-              <button id="analyse-all-btn" class="btn btn-primary btn-sm" disabled>
-                <i data-lucide="play"></i> Analyse All
-              </button>
+              <button id="analyse-all-btn" class="btn btn-primary" disabled><i data-lucide="play"></i> Analyse All</button>
             </div>
           </div>
         </div>
 
-        <!-- PDF Page Range -->
+        <!-- Page Range Selection Card -->
         <div class="card page-range-card">
           <div class="card-header-compact">
             <h3><i data-lucide="scissors"></i> PDF Page Range (Optional)</h3>
           </div>
-          <p class="field-desc">Skip front matter, appendices, and reference lists to save tokens.</p>
-          <div class="page-range-inputs" style="display: flex; gap: 1rem; align-items: center;">
+          <p class="field-desc" style="margin-bottom: 0.75rem;">Skip front matter, appendices, and reference lists to save processing time.</p>
+          <div class="page-range-inputs">
             <div style="flex: 1;">
               <label for="page-start" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Start Page</label>
-              <input type="number" id="page-start" placeholder="1" min="1" style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt); outline: none;">
+              <input type="number" id="page-start" placeholder="1" min="1" style="width: 100%;">
             </div>
             <div style="flex: 1;">
               <label for="page-end" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">End Page</label>
-              <input type="number" id="page-end" placeholder="Last" min="1" style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt); outline: none;">
+              <input type="number" id="page-end" placeholder="Last" min="1" style="width: 100%;">
             </div>
           </div>
           <p class="page-range-hint" style="font-size: 0.72rem; color: var(--ink-4); font-style: italic; margin-top: 0.5rem;">Leave blank to parse whole document.</p>
         </div>
 
-        <!-- AI Prompt Guidance Card -->
-        <div class="card ai-guidance-card" id="ai-guidance-card">
-          <div class="card-header-compact">
-            <h3><i data-lucide="sparkles"></i> AI Analysis Guidance (Optional)</h3>
-          </div>
-          <p class="field-desc">Provide custom rules, definitions, or instructions to calibrate classification consistency across all documents.</p>
-          <textarea id="ai-guidance-input" placeholder="Example: Only extract policies with specific timelines. Under 'Readiness', only label measures as 'Shovel-ready' if they have allocated budgets." style="width: 100%; height: 80px; padding: 0.5rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-family: var(--font-b); font-size: 0.8rem; background: var(--bg-alt); resize: vertical; outline: none; box-sizing: border-box;"></textarea>
-        </div>
-
-        <!-- Category/Theme Customization -->
+        <!-- Categories Editor Card -->
         <div class="card categories-card">
           <div class="card-header-compact">
             <h3><i data-lucide="settings"></i> Target Themes to Classify</h3>
-            <button id="reset-categories-btn" class="btn-text" title="Reset to defaults">Reset</button>
+            <button id="reset-categories-btn" class="btn-text" style="font-size: 0.75rem;">Reset</button>
           </div>
-          <p class="field-desc">Classifies text based on these topics. In Keyword Scan mode, prefix a keyword with a minus (e.g. <code>-rotation</code>) to exclude sentences containing that word.</p>
-          
-          <div id="categories-list" class="categories-list">
-            <!-- Dynamically populated categories -->
-          </div>
+          <p class="field-desc" style="margin-bottom: 0.75rem;">Define themes or measure types for classification. Double-click description to edit keywords inline.</p>
+          <div id="categories-list" class="categories-list"></div>
 
-          <form id="add-category-form" class="add-category-form">
-            <input type="text" id="new-category-name" placeholder="Theme name (e.g., Public Health)" required>
-            <input type="text" id="new-category-desc" placeholder="Keywords / Focus areas" required>
-            <button type="submit" class="btn btn-outline btn-sm"><i data-lucide="plus"></i> Add</button>
+          <!-- Add Category Form -->
+          <form id="add-category-form" class="add-category-form" style="margin-top: 1rem;">
+            <input type="text" id="new-category-name" placeholder="Theme Name (e.g. Energy Security)" required>
+            <input type="text" id="new-category-desc" placeholder="Keywords / Description..." required>
+            <button type="submit" class="btn btn-outline btn-sm w-100"><i data-lucide="plus"></i> Add Theme</button>
           </form>
         </div>
 
-      </section>
+      </aside>
 
-      <!-- ── Right Column: Results & Workspace ────────────────── -->
+      <!-- RIGHT COLUMN: Results & Display -->
       <section class="results-column">
         
         <!-- Tab Navigation Bar -->
@@ -209,55 +202,53 @@
           </div>
         </div>
 
-        <!-- Error State -->
+        <!-- Error State Card -->
         <div id="status-error" class="card error-state-card" style="display: none;">
-          <i data-lucide="alert-triangle" class="error-icon"></i>
-          <h3 id="error-title">Analysis Failed</h3>
-          <p id="error-message">Something went wrong during extraction or API analysis.</p>
-          <button id="retry-btn" class="btn btn-primary">Try Again</button>
+          <i data-lucide="alert-triangle" class="large-icon error-icon"></i>
+          <h3 id="error-title">Analysis Error</h3>
+          <p id="error-message">Something went wrong during extraction.</p>
+          <button id="retry-btn" class="btn btn-primary" style="margin-top: 1rem;">Retry Analysis</button>
         </div>
 
-        <!-- Tab Content: Single Report -->
-        <div id="tab-single" class="tab-content" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;">
-          <div class="report-selector-row">
+        <!-- Tab Content: Single Report View -->
+        <div id="tab-single" class="tab-content" style="display: none;">
+          <div class="report-selector-wrapper">
             <label for="report-selector" style="font-size: 0.85rem; font-weight: 600; color: var(--ink-2);">Viewing Report:</label>
             <select id="report-selector" class="report-selector"></select>
           </div>
-          
-          <!-- Results Header & Overview -->
+
+          <!-- Single Report Header Card -->
           <div class="card results-header-card">
-            <div class="results-title-row" style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
               <div>
                 <span class="results-kicker">Analysis Complete</span>
-                <h2 id="result-doc-name" style="font-family: var(--font-d); font-weight: 400; font-size: 1.65rem; line-height: 1.2;">Report Title</h2>
+                <h2 id="result-doc-name" style="font-family: var(--font-d); font-size: 1.5rem; margin-top: 0.2rem;">Doc Name</h2>
               </div>
-              <button id="export-report-btn" class="btn btn-outline btn-sm" disabled><i data-lucide="download"></i> Export Data</button>
+              <button id="export-report-btn" class="btn btn-outline btn-sm"><i data-lucide="download"></i> Export JSON</button>
             </div>
             
-            <div class="doc-meta-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; border-top: 1px solid var(--rule); padding-top: 1rem; margin-top: 1rem;">
-              <div class="meta-item">
+            <div class="meta-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--rule);">
+              <div>
                 <span class="meta-label" style="font-size: 0.72rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.15rem;">Length</span>
                 <span id="meta-words" class="meta-value" style="font-size: 0.95rem; font-weight: 600; color: var(--ink-2);">0 words</span>
               </div>
-              <div class="meta-item">
+              <div>
                 <span class="meta-label" style="font-size: 0.72rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.15rem;">Estimated Tokens</span>
                 <span id="meta-tokens" class="meta-value" style="font-size: 0.95rem; font-weight: 600; color: var(--ink-2);">0 tokens</span>
               </div>
-              <div class="meta-item">
+              <div>
                 <span class="meta-label" style="font-size: 0.72rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.15rem;">Model Used</span>
                 <span id="meta-model" class="meta-value" style="font-size: 0.95rem; font-weight: 600; color: var(--ink-2);">Gemini 3.5 Flash</span>
               </div>
             </div>
           </div>
 
-          <!-- Chart & breakdown Card -->
+          <!-- Donut Chart & Breakdown Card -->
           <div class="card chart-card">
-            <h3 class="card-section-title"><i data-lucide="pie-chart"></i> Theme Distribution (% of Report Discussion)</h3>
-            <p class="section-subtitle">Estimated percentage of content dedicated to each theme based on semantic analysis.</p>
-            
+            <h3 class="card-section-title"><i data-lucide="pie-chart"></i> Classification Breakdown</h3>
             <div class="chart-layout">
-              <div class="chart-visual">
-                <svg id="donut-svg" viewBox="0 0 200 200" width="100%" height="200">
+              <div class="chart-svg-container">
+                <svg id="donut-svg" viewBox="0 0 200 200">
                   <circle cx="100" cy="100" r="70" fill="none" stroke="#e4e3de" stroke-width="20" />
                   <text x="100" y="95" text-anchor="middle" font-weight="700" font-size="20" fill="#1a1a18" id="donut-center-pct">--%</text>
                   <text x="100" y="115" text-anchor="middle" font-size="10" fill="#6b6b63" letter-spacing="1">CLASSIFIED</text>
@@ -303,130 +294,117 @@
             </div>
             <div id="extracted-text-view" class="extracted-text-view"></div>
           </div>
+
         </div>
 
-        <!-- Tab Content: Comparison -->
-        <div id="tab-comparison" class="tab-content" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;">
-          
-          <!-- Comparison Header -->
-          <div class="card results-header-card">
-            <div class="results-title-row" style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+        <!-- Tab Content: Comparison View -->
+        <div id="tab-comparison" class="tab-content" style="display: none;">
+          <div class="card comparison-header-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
               <div>
                 <span class="results-kicker">Cross-Country Comparison</span>
-                <h2 style="font-family: var(--font-d); font-weight: 400; font-size: 1.65rem; line-height: 1.2;">UK Baseline Analysis</h2>
+                <h2 style="font-family: var(--font-d); font-size: 1.5rem; margin-top: 0.2rem;">UK Baseline Analysis</h2>
               </div>
-              <button id="export-comparison-btn" class="btn btn-outline btn-sm" disabled><i data-lucide="download"></i> Export Matrix CSV</button>
+              <button id="export-comparison-btn" class="btn btn-outline btn-sm"><i data-lucide="download"></i> Export Comparison CSV</button>
             </div>
           </div>
 
-          <!-- Grouped Bar Chart -->
+          <!-- Grouped Bar Chart Card -->
           <div class="card chart-card">
             <h3 class="card-section-title"><i data-lucide="bar-chart-2"></i> Theme Distribution by Country</h3>
-            <p class="section-subtitle">Side-by-side comparison of focus areas across analysed nations.</p>
-            <div id="grouped-bar-container" class="grouped-bar-chart" style="margin-top: 1.5rem;"></div>
+            <div id="grouped-bar-container" class="grouped-bar-container"></div>
           </div>
 
-          <!-- Comparison Matrix Table -->
-          <div class="card comparison-matrix-card">
+          <!-- Comparison Matrix Card -->
+          <div class="card matrix-card">
             <h3 class="card-section-title"><i data-lucide="table"></i> Comparison Matrix</h3>
             <p class="section-subtitle">Matrix colour-coded showing percentage difference compared to the UK baseline.</p>
-            <div id="comparison-matrix-container" style="margin-top: 1.25rem; overflow-x: auto;"></div>
+            <div id="comparison-matrix-container" class="comparison-matrix-container"></div>
           </div>
 
-          <!-- Custom Synthesis Insights -->
+          <!-- Custom AI Synthesis Insights Card -->
           <div class="card custom-synthesis-card" id="custom-synthesis-card" style="display: none; border-color: var(--primary);">
             <h3 class="card-section-title" style="color: var(--primary);"><i data-lucide="sparkles"></i> Custom AI Synthesis Insights</h3>
-            <p class="section-subtitle">AI response to your custom guidance / comparative research query.</p>
-            <div id="custom-synthesis-container" class="insights-text" style="margin-top: 1rem; line-height: 1.6; font-size: 0.88rem;"></div>
+            <div id="custom-synthesis-container" class="insights-text" style="margin-top: 0.75rem; white-space: normal;"></div>
           </div>
 
-          <!-- AI Synthesis Insights -->
+          <!-- Standard AI Comparative Insights Card -->
           <div class="card insights-card">
             <h3 class="card-section-title"><i data-lucide="sparkles"></i> AI Comparative Analysis (UK Baseline)</h3>
-            <p class="section-subtitle">Semantic synthesis identifying comparative strengths, gaps, and policy innovations.</p>
-            <div id="comparison-insights-container" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;"></div>
+            <div id="comparison-insights-container" class="comparison-insights-container"></div>
           </div>
         </div>
 
-        <!-- Tab Content: Facts Database -->
-        <div id="tab-facts" class="tab-content" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;">
-          
-          <!-- Facts Header -->
-          <div class="card results-header-card">
-            <div class="results-title-row" style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+        <!-- Tab Content: Facts Database View -->
+        <div id="tab-facts" class="tab-content" style="display: none; flex-direction: column; gap: 1.5rem;">
+          <div class="card facts-header-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
               <div>
                 <span class="results-kicker">Research Database</span>
-                <h2 style="font-family: var(--font-d); font-weight: 400; font-size: 1.65rem; line-height: 1.2;">Extracted Facts & Policies</h2>
+                <h2 style="font-family: var(--font-d); font-size: 1.5rem; margin-top: 0.2rem;">Extracted Facts & Policy Database</h2>
+                <p class="section-subtitle">Filter, search, edit, or manually add policy facts, financial commitments, and targets.</p>
               </div>
-              <div class="facts-export-row" style="display: flex; gap: 0.5rem;">
-                <button id="add-fact-note-btn" class="btn btn-primary btn-sm"><i data-lucide="plus"></i> Add Note</button>
-                <button id="export-facts-csv-btn" class="btn btn-outline btn-sm" disabled><i data-lucide="download"></i> Export CSV</button>
-                <button id="export-facts-json-btn" class="btn btn-outline btn-sm" disabled><i data-lucide="download"></i> Export JSON</button>
+              <div style="display: flex; gap: 0.5rem;">
+                <button id="export-facts-csv-btn" class="btn btn-outline btn-sm"><i data-lucide="download"></i> Export CSV</button>
+                <button id="export-facts-json-btn" class="btn btn-outline btn-sm"><i data-lucide="download"></i> Export JSON</button>
               </div>
             </div>
           </div>
 
-          <!-- Heuristics Info Guide -->
+          <!-- Matrix Heuristics Guide Card -->
           <div class="card matrix-heuristics-guide-card" id="matrix-heuristics-guide-card" style="display: none; padding: 1rem; background: var(--bg-alt); border-style: dashed; border-color: var(--rule-dk);">
             <h4 style="font-size: 0.8rem; font-weight: 600; color: var(--ink-2); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.5rem;">
-              <i data-lucide="info" style="width: 14px; height: 14px; color: var(--primary);"></i> 
-              Local Keyword Scan Matrix Heuristics
+              <i data-lucide="info" style="width: 14px; height: 14px; color: var(--primary);"></i> Keyword Heuristics Applied for Matrix Dimensions
             </h4>
             <p style="font-size: 0.72rem; color: var(--ink-3); margin-bottom: 0.75rem; line-height: 1.4;">
-              In <b>Keyword Scan Mode</b>, the other 9 policy dimensions are automatically classified using the presence of the following keyword stems in each matched sentence:
+              In <b>Keyword Scan Mode</b>, extracted facts are classified across the 10 policy dimensions using automated word-stem heuristics:
             </p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; font-size: 0.7rem; line-height: 1.4;">
-              <div><strong>Timing of Measure:</strong><br>• <em>Anticipatory:</em> anticipat, proactiv, prevent, prepar, befor, futur, plan<br>• <em>Reactive:</em> reactiv, respons, recover, rebuild, after, event, emergenc</div>
-              <div><strong>Depth of Change:</strong><br>• <em>Transformational:</em> transform, system-wid, scale, radic, restructur<br>• <em>Incremental:</em> increment, gradual, step, upgrad, adjust, improv</div>
-              <div><strong>Governance & Actor Level:</strong><br>• <em>National:</em> nation, govern, feder, minist, depart<br>• <em>Local authority:</em> local, council, municip, citi, region, author<br>• <em>Household:</em> househ, citizen, famili, privat, busi, corpor</div>
-              <div><strong>Implementation Readiness:</strong><br>• <em>Shovel-ready:</em> shovel-readi, readi, immedi, oper, launch, deploy<br>• <em>Developmental:</em> develop, studi, design, pilot, futur, plan</div>
-              <div><strong>Adaptability & Robustness:</strong><br>• <em>Flexible/modular:</em> flexibl, modular, adjust, adapt, option, path<br>• <em>Locked-in/fixed:</em> lock-in, fix, concret, perman, long-last</div>
-              <div><strong>Spatial Scope:</strong><br>• <em>Catchment/system-wide:</em> catchment, basin, system-wid, region, river, ecosystem<br>• <em>Site-Specific:</em> site-specif, local, build, facil, spot, site</div>
-              <div><strong>Cost-Benefit Complexity:</strong><br>• <em>Complex/intangible:</em> complex, intang, indirect, non-monet<br>• <em>Directly Quantifiable:</em> quantifi, cost, direct, dollar, pound, euro, currenc, budget</div>
-              <div><strong>Adaptation Function:</strong><br>• <em>Adaptive Capacity Building:</em> capac, train, awar, educ, data, research<br>• <em>Direct Adaptation Action:</em> direct, action, wall, defens, protect, instal, plant</div>
-              <div><strong>Strategy Type:</strong><br>• <em>Short term actions:</em> short-term, immedi, near-term, 2026, 2027, 2028<br>• <em>Long term actions:</em> long-term, 2030, 2040, 2050, centuri, future</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem; font-size: 0.7rem; color: var(--ink-2);">
+              <div><b>Timing:</b> "prevent/future" → Anticipatory; else Reactive</div>
+              <div><b>Depth:</b> "systemic/transform" → Transformational; else Incremental</div>
+              <div><b>Governance:</b> "council/local/city" → Local; "business/household" → Household; else National</div>
+              <div><b>Readiness:</b> "shovel/ready/underway" → Shovel-ready; else Developmental</div>
+              <div><b>Robustness:</b> "lock-in/fixed" → Locked-in; else Flexible/modular</div>
+              <div><b>Spatial Scope:</b> "catchment/basin/region" → Catchment; else Site-Specific</div>
+              <div><b>Cost-Benefit:</b> "cost/benefit/quantif" → Quantifiable; else Complex</div>
+              <div><b>Function:</b> "capacity/train/study" → Capacity; else Direct Action</div>
+              <div><b>Strategy Type:</b> "long-term/2040/2050" → Long term; else Short term</div>
             </div>
             <p style="font-size: 0.68rem; color: var(--ink-4); margin-top: 0.75rem; font-style: italic;">
-              * Note: You can always edit any classification cell in the table directly to correct or override these estimates!
+              Note: You can double-click any cell in the table below to edit these classifications manually.
             </p>
           </div>
 
-          <!-- Add Research Note Form Card -->
-          <div id="add-fact-note-form-card" class="card" style="display: none;">
-            <div class="card-header-compact">
-              <h3><i data-lucide="plus-circle"></i> Add Custom Research Note</h3>
-              <button id="close-add-fact-btn" type="button" class="btn-icon" style="background:transparent; border:none; cursor:pointer;"><i data-lucide="x"></i></button>
-            </div>
-            <form id="add-fact-form" style="display: flex; flex-direction: column; gap: 1rem;">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-                <div>
-                  <label for="new-fact-country" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Country</label>
-                  <select id="new-fact-country" style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt);" required></select>
-                </div>
-                <div>
-                  <label for="new-fact-theme" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Theme</label>
-                  <select id="new-fact-theme" style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt);" required></select>
-                </div>
-                <div>
-                  <label for="new-fact-type" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Fact Type</label>
-                  <select id="new-fact-type" style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt);" required>
-                    <option value="Policy">Policy</option>
-                    <option value="Target">Target</option>
-                    <option value="Financial">Financial</option>
-                    <option value="Organisation">Organisation</option>
-                  </select>
-                </div>
+          <!-- Add Custom Fact Card -->
+          <div class="card add-fact-card" style="padding: 1.25rem;">
+            <h4 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;"><i data-lucide="plus-circle"></i> Add Custom Policy Note / Fact</h4>
+            <form id="add-fact-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+              <div>
+                <label for="new-fact-country" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Country</label>
+                <select id="new-fact-country" style="width: 100%; padding: 0.4rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt);"></select>
               </div>
               <div>
+                <label for="new-fact-theme" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Theme</label>
+                <select id="new-fact-theme" style="width: 100%; padding: 0.4rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt);"></select>
+              </div>
+              <div>
+                <label for="new-fact-type" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Fact Type</label>
+                <select id="new-fact-type" style="width: 100%; padding: 0.4rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt);">
+                  <option value="Policy">Policy</option>
+                  <option value="Target">Target</option>
+                  <option value="Financial">Financial</option>
+                  <option value="Organisation">Organisation</option>
+                </select>
+              </div>
+              <div style="grid-column: 1 / -1;">
                 <label for="new-fact-desc" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Description</label>
-                <input type="text" id="new-fact-desc" placeholder="Brief summary of the policy, target, or financial commitment..." style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt);" required>
+                <input type="text" id="new-fact-desc" placeholder="e.g. Allocated £50m for flood defences in Yorkshire" style="width: 100%; padding: 0.4rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt);" required>
               </div>
-              <div>
+              <div style="grid-column: 1 / -1;">
                 <label for="new-fact-quote" style="font-size: 0.75rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Supporting Quote / Evidence (Optional)</label>
-                <textarea id="new-fact-quote" placeholder="Paste the exact sentence or paragraph from the report..." rows="3" style="width: 100%; padding: 0.45rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.8rem; background: var(--bg-alt); font-family: var(--font-b); resize: vertical;"></textarea>
+                <input type="text" id="new-fact-quote" placeholder="Direct quote from document..." style="width: 100%; padding: 0.4rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt);">
               </div>
-              <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
-                <button type="button" id="cancel-add-fact-btn" class="btn btn-outline">Cancel</button>
+              <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end;">
                 <button type="submit" class="btn btn-primary">Save Note</button>
               </div>
             </form>
@@ -470,15 +448,49 @@
               <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button id="export-map-svg-btn" class="btn btn-outline btn-sm"><i data-lucide="download"></i> Export Vector SVG</button>
                 <button id="export-map-png-btn" class="btn btn-primary btn-sm"><i data-lucide="image"></i> Export High-Res PNG</button>
+                <button id="export-map-all-png-btn" class="btn btn-outline btn-sm"><i data-lucide="layers"></i> Batch Export All Maps</button>
               </div>
             </div>
             
-            <!-- Controls row -->
+            <!-- Controls row 1: Metric Select -->
             <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--rule); flex-wrap: wrap;">
               <label for="map-metric-select" style="font-size: 0.8rem; font-weight: 600; color: var(--ink-2); white-space: nowrap;">Select Metric to Map:</label>
               <select id="map-metric-select" style="padding: 0.45rem 0.75rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.82rem; background: var(--bg-alt); outline: none; cursor: pointer; flex: 1; max-width: 420px;">
                 <!-- Dynamically populated -->
               </select>
+            </div>
+
+            <!-- Controls row 2: Customisation Inputs & Palette -->
+            <div style="display: flex; gap: 0.75rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed var(--rule); flex-wrap: wrap; align-items: flex-end;">
+              <div style="flex: 1; min-width: 180px;">
+                <label for="map-title-input" style="font-size: 0.72rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Custom Map Title:</label>
+                <input type="text" id="map-title-input" value="Global Climate Adaptation Choropleth Map" style="width: 100%; padding: 0.35rem 0.6rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt); outline: none;">
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <label for="map-subtitle-input" style="font-size: 0.72rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Custom Subtitle / Caption:</label>
+                <input type="text" id="map-subtitle-input" placeholder="Auto (Mapped Metric)" style="width: 100%; padding: 0.35rem 0.6rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt); outline: none;">
+              </div>
+              <div style="flex: 1; min-width: 140px;">
+                <label for="map-legend-title-input" style="font-size: 0.72rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Legend Title:</label>
+                <input type="text" id="map-legend-title-input" value="GRADIENT SCALE" style="width: 100%; padding: 0.35rem 0.6rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt); outline: none;">
+              </div>
+              <div style="width: 160px;">
+                <label for="map-scale-type-select" style="font-size: 0.72rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Legend Style:</label>
+                <select id="map-scale-type-select" style="width: 100%; padding: 0.35rem 0.6rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt); outline: none; cursor: pointer;">
+                  <option value="continuous">Continuous Gradient</option>
+                  <option value="discrete">Discrete Color Blocks</option>
+                </select>
+              </div>
+              <div style="width: 160px;">
+                <label for="map-color-scheme-select" style="font-size: 0.72rem; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 0.25rem;">Color Palette:</label>
+                <select id="map-color-scheme-select" style="width: 100%; padding: 0.35rem 0.6rem; border: 1px solid var(--rule-dk); border-radius: 4px; font-size: 0.78rem; background: var(--bg-alt); outline: none; cursor: pointer;">
+                  <option value="YlGnBu">Ocean Blue & Teal (Default)</option>
+                  <option value="Viridis">Viridis Emerald</option>
+                  <option value="Plasma">Magma / Purple & Gold</option>
+                  <option value="Blues">Steel & Classic Navy</option>
+                  <option value="Reds">Crimson & Warm Coral</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -510,6 +522,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <script src="app.js?v=36"></script>
+  <script src="app.js?v=42"></script>
 </body>
 </html>

@@ -214,24 +214,27 @@ function updateAPIKeyStatus() {
   const k = localStorage.getItem("ara_key");
   const b = document.getElementById("api-status-badge");
   const a = document.getElementById("analyse-all-btn");
-  
+
   const guidanceCard = document.getElementById("ai-guidance-card");
   if (guidanceCard) guidanceCard.style.display = (analysisMode === "ai") ? "block" : "none";
 
-  if (b) {
-    if (analysisMode === "keyword") {
-      b.textContent = "Not Required"; b.className = "badge badge-success";
-      if (a && reports.length) a.disabled = false;
+  // Determine whether key/mode conditions are met
+  let canRun = false;
+  if (analysisMode === "keyword") {
+    if (b) { b.textContent = "Not Required"; b.className = "badge badge-success"; }
+    canRun = true;
+  } else {
+    if (k && k.trim().length > 10) {
+      if (b) { b.textContent = "Key Set"; b.className = "badge badge-success"; }
+      canRun = true;
     } else {
-      if (k && k.trim().length > 10) {
-        b.textContent = "Key Set"; b.className = "badge badge-success";
-        if (a && reports.length) a.disabled = false;
-      } else {
-        b.textContent = "Missing Key"; b.className = "badge badge-warning";
-        if (a) a.disabled = true;
-      }
+      if (b) { b.textContent = "Missing Key"; b.className = "badge badge-warning"; }
+      canRun = false;
     }
   }
+
+  // Always update the button — independent of whether the badge element exists
+  if (a) a.disabled = !(canRun && reports.length > 0);
 }
 
 // ── Event Listeners ──────────────────────────────────────────
@@ -312,16 +315,33 @@ function setupEventListeners() {
     if (n.value.trim() && d.value.trim()) { categories.push({ name: n.value.trim(), desc: d.value.trim() }); saveCategories(); n.value = ""; d.value = ""; icons(); }
   });
 
-  // Taxonomy schema radio change listeners
-  document.querySelectorAll('input[name="taxonomy-schema"]').forEach(radio => {
-    radio.addEventListener("change", e => {
-      taxonomySchema = e.target.value;
-      initCategories();
-      reports.forEach(r => r.results = null);
-      allFacts = [];
-      resetViews();
-    });
-  });
+  // Taxonomy schema button toggle listeners
+  const btnThemes = document.getElementById("schema-btn-themes");
+  const btnMatrix = document.getElementById("schema-btn-matrix");
+
+  function applySchemaToggle(schema) {
+    taxonomySchema = schema;
+    const isMatrix = schema === "policy_matrix";
+    if (btnThemes) {
+      btnThemes.className = isMatrix ? "btn btn-outline btn-sm" : "btn btn-primary btn-sm active";
+      btnThemes.style.background = isMatrix ? "transparent" : "var(--primary)";
+      btnThemes.style.color = isMatrix ? "var(--ink-3)" : "#fff";
+      btnThemes.style.border = "none";
+    }
+    if (btnMatrix) {
+      btnMatrix.className = isMatrix ? "btn btn-primary btn-sm active" : "btn btn-outline btn-sm";
+      btnMatrix.style.background = isMatrix ? "var(--primary)" : "transparent";
+      btnMatrix.style.color = isMatrix ? "#fff" : "var(--ink-3)";
+      btnMatrix.style.border = "none";
+    }
+    initCategories();
+    reports.forEach(r => r.results = null);
+    allFacts = [];
+    resetViews();
+  }
+
+  btnThemes?.addEventListener("click", () => applySchemaToggle("themes"));
+  btnMatrix?.addEventListener("click", () => applySchemaToggle("policy_matrix"));
 
   // File list actions
   document.getElementById("clear-all-btn")?.addEventListener("click", () => { reports = []; renderFileList(); resetViews(); allFacts = []; });
@@ -342,8 +362,14 @@ function setupEventListeners() {
   document.getElementById("export-facts-csv-btn")?.addEventListener("click", exportFactsCSV);
   document.getElementById("export-facts-json-btn")?.addEventListener("click", exportFactsJSON);
   document.getElementById("map-metric-select")?.addEventListener("change", renderChoroplethMap);
+  ["map-title-input", "map-subtitle-input", "map-legend-title-input"].forEach(id => {
+    document.getElementById(id)?.addEventListener("input", renderChoroplethMap);
+  });
+  document.getElementById("map-scale-type-select")?.addEventListener("change", renderChoroplethMap);
+  document.getElementById("map-color-scheme-select")?.addEventListener("change", renderChoroplethMap);
   document.getElementById("export-map-svg-btn")?.addEventListener("click", exportMapSVG);
   document.getElementById("export-map-png-btn")?.addEventListener("click", exportMapPNG);
+  document.getElementById("export-map-all-png-btn")?.addEventListener("click", exportAllMapImages);
 
   // Text search
   document.getElementById("text-search-input")?.addEventListener("input", e => renderExtractedText(e.target.value));
@@ -444,14 +470,17 @@ function renderFileList() {
   const analyseBtn = document.getElementById("analyse-all-btn");
   if (!container || !list) return;
 
+  const dropzone = document.getElementById("dropzone");
   if (reports.length === 0) {
-    container.hidden = true;
-    document.getElementById("dropzone").style.display = "block";
+    container.style.display = "none";
+    if (dropzone) dropzone.style.display = "flex";
     if (analyseBtn) analyseBtn.disabled = true;
     return;
   }
 
-  container.hidden = false;
+  // Hide the dropzone, show the file list
+  if (dropzone) dropzone.style.display = "none";
+  container.style.display = "block";
   list.innerHTML = "";
 
   reports.forEach((r, i) => {
@@ -2201,16 +2230,62 @@ async function renderChoroplethMap() {
   const values = Object.values(countryData).map(d => d.value);
   const maxVal = values.length > 0 ? Math.max(...values, 10) : 100;
 
-  // Color scale
-  const colorScale = d3.scaleSequential()
-    .domain([0, maxVal])
-    .interpolator(d3.interpolateYlGnBu);
+  // Read customization inputs
+  const titleInput = document.getElementById("map-title-input");
+  const subtitleInput = document.getElementById("map-subtitle-input");
+  const legendTitleInput = document.getElementById("map-legend-title-input");
 
-  // Update HTML Legend Labels
+  const customTitle = titleInput ? titleInput.value : "Global Climate Adaptation Choropleth Map";
+  const customSubtitle = subtitleInput ? subtitleInput.value : `Mapped Metric: ${metricText}`;
+  const customLegendTitle = legendTitleInput ? legendTitleInput.value : "GRADIENT SCALE";
+  const scaleType = document.getElementById("map-scale-type-select")?.value || "continuous";
+  const paletteChoice = document.getElementById("map-color-scheme-select")?.value || "YlGnBu";
+
+  let interpolator = d3.interpolateYlGnBu;
+  let gradientStops = ["#e0f2fe", "#0284c7", "#1d4e89"];
+
+  if (paletteChoice === "Viridis") {
+    interpolator = d3.interpolateViridis;
+    gradientStops = ["#fde725", "#21918c", "#440154"];
+  } else if (paletteChoice === "Plasma") {
+    interpolator = d3.interpolatePlasma;
+    gradientStops = ["#f0f921", "#cc4778", "#0d0887"];
+  } else if (paletteChoice === "Blues") {
+    interpolator = d3.interpolateBlues;
+    gradientStops = ["#eff3ff", "#6baed6", "#08519c"];
+  } else if (paletteChoice === "Reds") {
+    interpolator = d3.interpolateReds;
+    gradientStops = ["#fff5f0", "#fb6a4a", "#67000d"];
+  }
+
+  // Generate 5 discrete step colors
+  const stepColors = [0.1, 0.3, 0.5, 0.7, 0.9].map(t => interpolator(t));
+
+  // Color scale selection
+  let colorScale;
+  if (scaleType === "discrete") {
+    colorScale = d3.scaleQuantize()
+      .domain([0, maxVal])
+      .range(stepColors);
+  } else {
+    colorScale = d3.scaleSequential()
+      .domain([0, maxVal])
+      .interpolator(interpolator);
+  }
+
+  // Update HTML Legend Labels & Gradient Bar
   const minLabel = document.getElementById("legend-min-label");
   const maxLabel = document.getElementById("legend-max-label");
+  const htmlGradientBar = document.getElementById("legend-gradient-bar");
   if (minLabel) minLabel.textContent = "0%";
   if (maxLabel) maxLabel.textContent = `${maxVal}%`;
+  if (htmlGradientBar) {
+    if (scaleType === "discrete") {
+      htmlGradientBar.style.background = `linear-gradient(to right, ${stepColors[0]} 0% 20%, ${stepColors[1]} 20% 40%, ${stepColors[2]} 40% 60%, ${stepColors[3]} 60% 80%, ${stepColors[4]} 80% 100%)`;
+    } else {
+      htmlGradientBar.style.background = `linear-gradient(to right, ${gradientStops.join(', ')})`;
+    }
+  }
 
   // Fetch 50m high-resolution world atlas topology if not cached
   if (!cachedWorldAtlas) {
@@ -2288,27 +2363,33 @@ async function renderChoroplethMap() {
       if (tooltip) tooltip.style.display = "none";
     });
 
-  // 3. In-SVG Title & Active Metric Header (for SVG & PNG Export)
-  const headerGroup = svg.append("g")
-    .attr("transform", "translate(25, 35)");
+  // 3. In-SVG Title & Active Metric Header (for Live Preview, SVG & PNG Export)
+  if (customTitle.trim() || customSubtitle.trim()) {
+    const headerGroup = svg.append("g")
+      .attr("transform", "translate(25, 35)");
 
-  headerGroup.append("text")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("font-family", "'DM Serif Display', Georgia, serif")
-    .attr("font-size", "20px")
-    .attr("font-weight", "bold")
-    .attr("fill", "#1a1a18")
-    .text("Global Climate Adaptation Choropleth Map");
+    if (customTitle.trim()) {
+      headerGroup.append("text")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("font-family", "'DM Serif Display', Georgia, serif")
+        .attr("font-size", "20px")
+        .attr("font-weight", "bold")
+        .attr("fill", "#1a1a18")
+        .text(customTitle);
+    }
 
-  headerGroup.append("text")
-    .attr("x", 0)
-    .attr("y", 22)
-    .attr("font-family", "'Inter', system-ui, sans-serif")
-    .attr("font-size", "13px")
-    .attr("font-weight", "600")
-    .attr("fill", "#1d4e89")
-    .text(`Mapped Metric: ${metricText}`);
+    if (customSubtitle.trim()) {
+      headerGroup.append("text")
+        .attr("x", 0)
+        .attr("y", customTitle.trim() ? 22 : 0)
+        .attr("font-family", "'Inter', system-ui, sans-serif")
+        .attr("font-size", "13px")
+        .attr("font-weight", "600")
+        .attr("fill", gradientStops[2] || "#1d4e89")
+        .text(customSubtitle);
+    }
+  }
 
   // 4. In-SVG Gradient Scale Legend (for SVG & PNG Export)
   const defs = svg.append("defs");
@@ -2317,46 +2398,74 @@ async function renderChoroplethMap() {
     .attr("x1", "0%").attr("y1", "0%")
     .attr("x2", "100%").attr("y2", "0%");
 
-  linearGrad.append("stop").attr("offset", "0%").attr("stop-color", "#e0f2fe");
-  linearGrad.append("stop").attr("offset", "50%").attr("stop-color", "#0284c7");
-  linearGrad.append("stop").attr("offset", "100%").attr("stop-color", "#1d4e89");
+  linearGrad.append("stop").attr("offset", "0%").attr("stop-color", gradientStops[0]);
+  linearGrad.append("stop").attr("offset", "50%").attr("stop-color", gradientStops[1]);
+  linearGrad.append("stop").attr("offset", "100%").attr("stop-color", gradientStops[2]);
+
+  // Clean Legend Layout (Adaptive based on presence of Legend Title)
+  const hasLegendTitle = customLegendTitle.trim().length > 0;
+  const barY = hasLegendTitle ? 18 : 5;
+  const labelY = barY + 24;
+  const cardH = hasLegendTitle ? 65 : 46;
+  const legendYPos = hasLegendTitle ? 430 : 445;
 
   const legendGroup = svg.append("g")
-    .attr("transform", "translate(25, 435)");
+    .attr("transform", `translate(25, ${legendYPos})`);
 
   // Legend Card Background
   legendGroup.append("rect")
     .attr("x", -10)
     .attr("y", -10)
     .attr("width", 260)
-    .attr("height", 65)
-    .attr("fill", "rgba(255, 255, 255, 0.9)")
+    .attr("height", cardH)
+    .attr("fill", "rgba(255, 255, 255, 0.92)")
     .attr("stroke", "#e4e3de")
     .attr("stroke-width", "1px")
     .attr("rx", 6);
 
+  // Render Title ONLY if user provided a non-empty string
+  if (hasLegendTitle) {
+    legendGroup.append("text")
+      .attr("x", 0)
+      .attr("y", 4)
+      .attr("font-family", "'Inter', system-ui, sans-serif")
+      .attr("font-size", "11px")
+      .attr("font-weight", "600")
+      .attr("fill", "#6b6b63")
+      .text(customLegendTitle.trim().toUpperCase());
+  }
+
+  if (scaleType === "discrete") {
+    // Render 5 discrete color blocks
+    const blockW = 46;
+    stepColors.forEach((col, idx) => {
+      legendGroup.append("rect")
+        .attr("x", idx * (blockW + 2))
+        .attr("y", barY)
+        .attr("width", blockW)
+        .attr("height", 12)
+        .attr("rx", 2)
+        .attr("fill", col)
+        .attr("stroke", "#c8c7c0")
+        .attr("stroke-width", "0.5px");
+    });
+  } else {
+    // Render continuous gradient bar
+    legendGroup.append("rect")
+      .attr("x", 0)
+      .attr("y", barY)
+      .attr("width", 240)
+      .attr("height", 12)
+      .attr("rx", 3)
+      .attr("fill", "url(#svg-choropleth-gradient)")
+      .attr("stroke", "#c8c7c0")
+      .attr("stroke-width", "0.5px");
+  }
+
+  // Legend Bounds Labels (0% and Max%)
   legendGroup.append("text")
     .attr("x", 0)
-    .attr("y", 6)
-    .attr("font-family", "'Inter', system-ui, sans-serif")
-    .attr("font-size", "11px")
-    .attr("font-weight", "600")
-    .attr("fill", "#6b6b63")
-    .text("GRADIENT SCALE (0% - " + maxVal + "%)");
-
-  legendGroup.append("rect")
-    .attr("x", 0)
-    .attr("y", 15)
-    .attr("width", 240)
-    .attr("height", 12)
-    .attr("rx", 3)
-    .attr("fill", "url(#svg-choropleth-gradient)")
-    .attr("stroke", "#c8c7c0")
-    .attr("stroke-width", "0.5px");
-
-  legendGroup.append("text")
-    .attr("x", 0)
-    .attr("y", 42)
+    .attr("y", labelY)
     .attr("font-family", "'Inter', system-ui, sans-serif")
     .attr("font-size", "11px")
     .attr("font-weight", "600")
@@ -2365,7 +2474,7 @@ async function renderChoroplethMap() {
 
   legendGroup.append("text")
     .attr("x", 240)
-    .attr("y", 42)
+    .attr("y", labelY)
     .attr("text-anchor", "end")
     .attr("font-family", "'Inter', system-ui, sans-serif")
     .attr("font-size", "11px")
@@ -2383,37 +2492,88 @@ function exportMapSVG() {
   toast("Exported Map SVG", "success");
 }
 
+function downloadMapAsPNG(filename = "global_adaptation_choropleth_map.png") {
+  return new Promise((resolve) => {
+    const svgEl = document.getElementById("choropleth-svg");
+    if (!svgEl) { resolve(); return; }
+
+    const serializer = new XMLSerializer();
+    const source = serializer.serializeToString(svgEl);
+    const svgBlob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1920;  // 2x high-res output
+      canvas.height = 1000;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+
+      canvas.toBlob(blob => {
+        const pngUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = pngUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          a.remove();
+          URL.revokeObjectURL(pngUrl);
+          resolve();
+        }, 150);
+      }, "image/png");
+    };
+    img.onerror = () => resolve();
+    img.src = url;
+  });
+}
+
 function exportMapPNG() {
-  const svgEl = document.getElementById("choropleth-svg");
-  if (!svgEl) return;
-  const serializer = new XMLSerializer();
-  const source = serializer.serializeToString(svgEl);
-  const svgBlob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(svgBlob);
+  downloadMapAsPNG("global_adaptation_choropleth_map.png").then(() => {
+    toast("Exported High-Res PNG Map", "success");
+  });
+}
 
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1920;  // 2x high-res output
-    canvas.height = 1000;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    URL.revokeObjectURL(url);
+async function exportAllMapImages() {
+  const select = document.getElementById("map-metric-select");
+  if (!select || select.options.length === 0) {
+    toast("No metrics available to export", "warning");
+    return;
+  }
 
-    canvas.toBlob(blob => {
-      const pngUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = pngUrl;
-      a.download = "global_adaptation_choropleth_map.png";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { a.remove(); URL.revokeObjectURL(pngUrl); }, 100);
-      toast("Exported High-Res PNG Map", "success");
-    }, "image/png");
-  };
-  img.src = url;
+  const options = Array.from(select.options);
+  const originalIndex = select.selectedIndex;
+
+  toast(`Starting Batch Export of ${options.length} Map Images...`, "info", 4000);
+
+  for (let i = 0; i < options.length; i++) {
+    const opt = options[i];
+    select.selectedIndex = i;
+
+    // Render map for current metric
+    await renderChoroplethMap();
+
+    // Clean file name
+    const rawName = opt.text.replace(/[^a-z0-9]/gi, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+    const filename = `Choropleth_${i + 1}_${rawName}.png`;
+
+    // Download PNG
+    await downloadMapAsPNG(filename);
+    toast(`Exported (${i + 1}/${options.length}): ${opt.text}`, "info", 1500);
+
+    // Stagger downloads slightly to prevent browser download throttling
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  // Restore original metric choice
+  select.selectedIndex = originalIndex;
+  await renderChoroplethMap();
+
+  toast(`Batch Export Complete! Downloaded ${options.length} High-Res Map Images.`, "success", 5000);
 }
 
 // ── Export Functions ──────────────────────────────────────────

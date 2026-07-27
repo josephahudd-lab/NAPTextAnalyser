@@ -934,6 +934,9 @@ body {
 
 .tab-content {
   display: none;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 
